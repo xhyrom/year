@@ -5,4 +5,4 @@ COPY src ./
 
 RUN bun install
 
-ENTRYPOINT [ "bun", "run", "src/index.ts" ]
+ENTRYPOINT [ "bun", "run", "index.ts" ]
