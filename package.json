@@ -1,18 +1,15 @@
 {
-  "name": "newyear",
-  "version": "1.0.0",
-  "description": "",
+  "name": "year",
   "type": "module",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node src/index.js"
+  "private": true,
+  "workspaces": [
+    "discord",
+    "www"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest"
   },
-  "keywords": [],
-  "author": "xHyroM",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "discord.js": "^14.7.1",
-    "dotenv": "^16.0.3",
-    "moment-timezone": "^0.5.40"
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }

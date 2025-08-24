@@ -1,10 +1,9 @@
 FROM oven/bun:latest
 
-COPY .env ./
 COPY package.json ./
-COPY bun.lockb ./
+COPY ../bun.lock ./
 COPY src ./
 
 RUN bun install
 
-ENTRYPOINT [ "bun", "run", "index.js" ]
+ENTRYPOINT [ "bun", "run", "src/index.ts" ]
