@@ -2,7 +2,9 @@ import { Client, IntentsBitField, TextChannel } from "discord.js";
 import moment from "moment-timezone";
 import { Cron } from "croner";
 
-const CHANNEL_ID = "1056166562614231061";
+if (!process.env.CHANNEL_ID) {
+  throw new Error("Missing CHANNEL_ID environment variable.");
+}
 
 const client = new Client({
   intents: [IntentsBitField.Flags.Guilds],
@@ -27,7 +29,7 @@ const calculate = () => {
 
   // send message to channel
   (client.channels.cache
-    .get(CHANNEL_ID) as TextChannel)!
+    .get(process.env.CHANNEL_ID!) as TextChannel)!
     .send(
       [
         `The year is now **${percentage}%** complete.`,
