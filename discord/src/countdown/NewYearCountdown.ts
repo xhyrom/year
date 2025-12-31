@@ -187,7 +187,28 @@ export class NewYearCountdown extends Countdown {
   }
 
   override enabled(): boolean {
-    return true;
+    const now = moment.utc();
+    const currentYear = now.year();
+
+    let targetYear = currentYear;
+
+    if (now.month() === 11) {
+      targetYear = currentYear + 1;
+    } else if (now.month() === 0) {
+      targetYear = currentYear;
+    } else {
+      return false;
+    }
+
+    const startWindow = moment
+      .tz({ year: targetYear, month: 0, day: 1, hour: 0 }, "Pacific/Kiritimati")
+      .subtract(1, "hours");
+
+    const endWindow = moment
+      .tz({ year: targetYear, month: 0, day: 1, hour: 0 }, "Etc/GMT+12")
+      .add(2, "hours");
+
+    return now.isSameOrAfter(startWindow) && now.isSameOrBefore(endWindow);
   }
 
   override interval(): UpdateInterval {
