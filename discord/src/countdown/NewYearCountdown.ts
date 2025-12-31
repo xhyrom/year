@@ -106,7 +106,7 @@ class TimezoneUtils {
         .tz(tzName)
         .year(targetYear)
         .startOf("year");
-      const minutesUntil = nextNewYearLocal.diff(localTime, "minutes");
+      const minutesUntil = nextNewYearLocal.diff(localTime, "minutes", true);
 
       if (Math.abs(minutesUntil) > 366 * 24 * 60) continue;
 
