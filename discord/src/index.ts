@@ -14,10 +14,23 @@ client.on("clientReady", () => {
     {
       timezone: "Europe/London",
     },
-    () =>
+    () => {
       Countdowns.all()
-        .filter((c) => c.enabled())
-        .forEach((c) => c.channel(client).send(c.message())),
+        .filter((c) => c.enabled() && c.interval() === "daily")
+        .forEach((c) => c.onUpdate(client).catch(console.error));
+    },
+  );
+
+  new Cron(
+    "* * * * *",
+    {
+      timezone: "UTC",
+    },
+    () => {
+      Countdowns.all()
+        .filter((c) => c.enabled() && c.interval() === "minutely")
+        .forEach((c) => c.onUpdate(client).catch(console.error));
+    },
   );
 });
 

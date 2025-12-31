@@ -1,5 +1,5 @@
 import moment from "moment-timezone";
-import { Countdown } from "./Countdown";
+import { Countdown, type UpdateInterval } from "./Countdown";
 
 export class ChristmasCountdown extends Countdown {
   override get channelId(): string {
@@ -8,6 +8,10 @@ export class ChristmasCountdown extends Countdown {
 
   override enabled(): boolean {
     return new Date().getMonth() == 11;
+  }
+
+  override interval(): UpdateInterval {
+    return "daily";
   }
 
   override message(): string {
