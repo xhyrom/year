@@ -32,6 +32,10 @@ client.on("clientReady", () => {
         .forEach((c) => c.onUpdate(client).catch(console.error));
     },
   );
+
+  Countdowns.all()
+    .filter((c) => c.enabled() && c.interval() === "minutely")
+    .forEach((c) => c.onUpdate(client).catch(console.error));
 });
 
 process.on("uncaughtException", console.log);

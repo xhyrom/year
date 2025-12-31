@@ -206,7 +206,7 @@ export class NewYearCountdown extends Countdown {
 
     const endWindow = moment
       .tz({ year: targetYear, month: 0, day: 1, hour: 0 }, "Etc/GMT+12")
-      .add(2, "hours");
+      .add(24, "hours");
 
     return now.isSameOrAfter(startWindow) && now.isSameOrBefore(endWindow);
   }
@@ -276,75 +276,83 @@ export class NewYearCountdown extends Countdown {
     const targetYear =
       nowUtc.month() === 11 ? nowUtc.year() + 1 : nowUtc.year();
 
-    const arrivedTimezones = allTimezones.filter(
-      (tz) => tz.minutesUntilNewYear <= 0 && tz.minutesUntilNewYear > -60 * 24,
+    const arrivedTimezones = allTimezones
+      .filter((tz) => tz.minutesUntilNewYear <= 0)
+      .sort((a, b) => a.minutesUntilNewYear - b.minutesUntilNewYear);
+
+    if (arrivedTimezones.length === 0) return;
+
+    const threadName = `in ${targetYear}`;
+    let thread = channel.threads.cache.find(
+      (t: any) => t.name.toLowerCase() === threadName,
     );
 
-    arrivedTimezones.sort(
-      (a, b) => b.minutesUntilNewYear - a.minutesUntilNewYear,
-    );
-
-    for (const info of arrivedTimezones) {
-      const wasAlreadySent = await this.checkOrSendGreeting(
-        client,
-        channel,
-        info,
-        targetYear,
-      );
-
-      if (wasAlreadySent) {
-        break;
-      }
-    }
-  }
-
-  private async checkOrSendGreeting(
-    client: Client,
-    channel: any,
-    info: TimezoneInfo,
-    year: number,
-  ): Promise<boolean> {
-    const threadName = `in ${year}`;
-
-    try {
-      let thread = channel.threads.cache.find(
-        (t: any) => t.name.toLowerCase() === threadName,
-      );
-      if (!thread) {
+    if (!thread) {
+      try {
         const active = await channel.threads.fetch();
         thread = active.threads.find(
           (t: any) => t.name.toLowerCase() === threadName,
         );
+      } catch (e) {
+        console.error("Error fetching threads", e);
       }
+    }
 
-      if (!thread) return true;
+    if (!thread) {
+      return;
+    }
 
-      const messages = await thread.messages.fetch({ limit: 5 });
+    let startIndex = 0;
+
+    try {
+      const messages = await thread.messages.fetch({ limit: 10 });
+
       const lastBotMessage = messages
-        .filter((m: any) => m.author.id === client.user?.id)
+        .filter(
+          (m: any) =>
+            m.author.id === client.user?.id &&
+            m.content.includes("Happy New Year"),
+        )
         .first();
 
-      const greetingMarker = "Happy New Year";
-      let alreadySent = false;
-
       if (lastBotMessage) {
-        const content = lastBotMessage.content;
-        if (content.includes(greetingMarker) && content.includes(info.name)) {
-          alreadySent = true;
+        const foundIndex = arrivedTimezones.findIndex((tz) =>
+          lastBotMessage.content.includes(tz.name),
+        );
+
+        if (foundIndex !== -1) {
+          startIndex = foundIndex + 1;
+        } else {
         }
       }
-
-      if (alreadySent) {
-        return true;
-      } else {
-        console.log(`Sending missing greeting to ${info.name}`);
-        const message = `🎉🥂 **Happy New Year ${year}** 🥂🎉 to all our friends in **${info.name} (${info.offset})**! May the coming year be filled with joy, prosperity, and happiness. 🌟🎆`;
-        await thread.send(message);
-        return false;
-      }
     } catch (e) {
-      console.error(`Failed to check/send greeting for ${info.name}`, e);
-      return true;
+      console.error("Error fetching thread messages:", e);
+      return;
+    }
+
+    const timezonesToSend = arrivedTimezones.slice(startIndex);
+
+    if (timezonesToSend.length === 0) return;
+
+    console.log(`Sending ${timezonesToSend.length} missed greetings...`);
+
+    for (const info of timezonesToSend) {
+      await this.sendGreeting(thread, info, targetYear);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
+
+  private async sendGreeting(
+    thread: any,
+    info: TimezoneInfo,
+    year: number,
+  ): Promise<void> {
+    try {
+      console.log(`Sending greeting for ${info.name}`);
+      const message = `🎉🥂 **Happy New Year ${year}** 🥂🎉 to all our friends in **${info.name} (${info.offset})**! May the coming year be filled with joy, prosperity, and happiness. 🌟🎆`;
+      await thread.send(message);
+    } catch (e) {
+      console.error(`Failed to send greeting for ${info.name}`, e);
     }
   }
 }
