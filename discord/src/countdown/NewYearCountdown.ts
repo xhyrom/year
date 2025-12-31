@@ -172,7 +172,9 @@ class AnsiFormatter {
     }
 
     const h = Math.floor(tz.minutesUntilNewYear / 60);
-    const m = (tz.minutesUntilNewYear % 60).toString().padStart(2, "0");
+    const m = Math.floor(tz.minutesUntilNewYear % 60)
+      .toString()
+      .padStart(2, "0");
     const s = (59 - (Math.floor(Date.now() / 1000) % 60))
       .toString()
       .padStart(2, "0");
